@@ -25,7 +25,6 @@ def new_zillow_data():
     - create a connection_url to mySQL
     - return a df of the given query from the zillow
     """
-    
     sql_query = """
         SELECT p.id, p.bedroomcnt, p.bathroomcnt,
         p.calculatedfinishedsquarefeet, p.taxvaluedollarcnt, 
@@ -52,14 +51,38 @@ def get_zillow_data():
         - writes df to csv
     - outputs zillow df
     """
-    filename = 'zillow.csv'
+    filename = 'zillow_2017.csv'
     
     if os.path.isfile(filename): 
-        df = pd.read_csv(filename)
+        df = pd.read_csv(filename, index_col=0)
         return df
     else:
         df = new_zillow_data()
 
         df.to_csv(filename)
     return df
+
+def prep_zillow(df):
+    '''
+    This function takes in a dataframe
+    renames the columns and drops nulls values
+    Additionally it changes datatypes for appropriate columns
+    and renames fips to actual county names.
+    Then returns a cleaned dataframe
+    '''
+    df = df.rename(columns = {'bedroomcnt':'bedrooms',
+                     'bathroomcnt':'bathrooms',
+                     'calculatedfinishedsquarefeet':'sqft',
+                     'taxvaluedollarcnt':'taxvalue',
+                     'fips':'county'})
     
+    df = df.dropna()
+    
+    make_ints = ['bedrooms','sqft','taxvalue','yearbuilt']
+
+    for col in make_ints:
+        df[col] = df[col].astype(int)
+        
+    df.county = df.county.map({6037:'LA',6059:'Orange',6111:'Ventura'})
+    
+    return df
