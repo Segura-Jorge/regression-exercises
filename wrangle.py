@@ -27,10 +27,15 @@ def new_zillow_data():
     """
     sql_query = """
         SELECT p.id, p.bedroomcnt, p.bathroomcnt,
-        p.calculatedfinishedsquarefeet, p.taxvaluedollarcnt, 
-        p.yearbuilt, p.taxamount, p.fips
+        p.calculatedfinishedsquarefeet, 
+        p.structuretaxvaluedollarcnt,
+        p.landtaxvaluedollarcnt,
+        p.taxvaluedollarcnt, p.yearbuilt,
+        p.taxamount, p.fips
         FROM properties_2017 AS p
         WHERE p.propertylandusetypeid IN (261)
+        AND p.yearbuilt < 2017
+        AND p.assessmentyear = 2016
         ;
         """
     
@@ -70,11 +75,14 @@ def prep_zillow(df):
     and renames fips to actual county names.
     Then returns a cleaned dataframe
     '''
-    df = df.rename(columns = {'bedroomcnt':'bedrooms',
-                     'bathroomcnt':'bathrooms',
-                     'calculatedfinishedsquarefeet':'sqft',
-                     'taxvaluedollarcnt':'taxvalue',
-                     'fips':'county'})
+    df = df.rename(columns = 
+                   {'bedroomcnt':'bedrooms',
+                    'bathroomcnt':'bathrooms',
+                    'landtaxvaluedollarcnt':'tax_land',
+                    'structuretaxvaluedollarcnt':'tax_structure',
+                    'calculatedfinishedsquarefeet':'sqft',
+                    'taxvaluedollarcnt':'taxvalue',
+                    'fips':'county'})
     
     df = df.dropna()
     
